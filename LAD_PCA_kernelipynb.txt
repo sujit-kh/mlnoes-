@@ -1,0 +1,1156 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "3a1039a4",
+   "metadata": {},
+   "source": [
+    "# Data Reduction"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "15751a4b",
+   "metadata": {},
+   "source": [
+    "# LDA : Linear Discriminant Analysis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "b11f94c4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "23d60fcf",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dataset=pd.read_csv('D:/Test/Wine.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "33f014fd",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Alcohol</th>\n",
+       "      <th>Malic_Acid</th>\n",
+       "      <th>Ash</th>\n",
+       "      <th>Ash_Alcanity</th>\n",
+       "      <th>Magnesium</th>\n",
+       "      <th>Total_Phenols</th>\n",
+       "      <th>Flavanoids</th>\n",
+       "      <th>Nonflavanoid_Phenols</th>\n",
+       "      <th>Proanthocyanins</th>\n",
+       "      <th>Color_Intensity</th>\n",
+       "      <th>Hue</th>\n",
+       "      <th>OD280</th>\n",
+       "      <th>Proline</th>\n",
+       "      <th>Customer_Segment</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>14.23</td>\n",
+       "      <td>1.71</td>\n",
+       "      <td>2.43</td>\n",
+       "      <td>15.6</td>\n",
+       "      <td>127</td>\n",
+       "      <td>2.80</td>\n",
+       "      <td>3.06</td>\n",
+       "      <td>0.28</td>\n",
+       "      <td>2.29</td>\n",
+       "      <td>5.64</td>\n",
+       "      <td>1.04</td>\n",
+       "      <td>3.92</td>\n",
+       "      <td>1065</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>13.20</td>\n",
+       "      <td>1.78</td>\n",
+       "      <td>2.14</td>\n",
+       "      <td>11.2</td>\n",
+       "      <td>100</td>\n",
+       "      <td>2.65</td>\n",
+       "      <td>2.76</td>\n",
+       "      <td>0.26</td>\n",
+       "      <td>1.28</td>\n",
+       "      <td>4.38</td>\n",
+       "      <td>1.05</td>\n",
+       "      <td>3.40</td>\n",
+       "      <td>1050</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>13.16</td>\n",
+       "      <td>2.36</td>\n",
+       "      <td>2.67</td>\n",
+       "      <td>18.6</td>\n",
+       "      <td>101</td>\n",
+       "      <td>2.80</td>\n",
+       "      <td>3.24</td>\n",
+       "      <td>0.30</td>\n",
+       "      <td>2.81</td>\n",
+       "      <td>5.68</td>\n",
+       "      <td>1.03</td>\n",
+       "      <td>3.17</td>\n",
+       "      <td>1185</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>14.37</td>\n",
+       "      <td>1.95</td>\n",
+       "      <td>2.50</td>\n",
+       "      <td>16.8</td>\n",
+       "      <td>113</td>\n",
+       "      <td>3.85</td>\n",
+       "      <td>3.49</td>\n",
+       "      <td>0.24</td>\n",
+       "      <td>2.18</td>\n",
+       "      <td>7.80</td>\n",
+       "      <td>0.86</td>\n",
+       "      <td>3.45</td>\n",
+       "      <td>1480</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>13.24</td>\n",
+       "      <td>2.59</td>\n",
+       "      <td>2.87</td>\n",
+       "      <td>21.0</td>\n",
+       "      <td>118</td>\n",
+       "      <td>2.80</td>\n",
+       "      <td>2.69</td>\n",
+       "      <td>0.39</td>\n",
+       "      <td>1.82</td>\n",
+       "      <td>4.32</td>\n",
+       "      <td>1.04</td>\n",
+       "      <td>2.93</td>\n",
+       "      <td>735</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Alcohol  Malic_Acid   Ash  Ash_Alcanity  Magnesium  Total_Phenols  \\\n",
+       "0    14.23        1.71  2.43          15.6        127           2.80   \n",
+       "1    13.20        1.78  2.14          11.2        100           2.65   \n",
+       "2    13.16        2.36  2.67          18.6        101           2.80   \n",
+       "3    14.37        1.95  2.50          16.8        113           3.85   \n",
+       "4    13.24        2.59  2.87          21.0        118           2.80   \n",
+       "\n",
+       "   Flavanoids  Nonflavanoid_Phenols  Proanthocyanins  Color_Intensity   Hue  \\\n",
+       "0        3.06                  0.28             2.29             5.64  1.04   \n",
+       "1        2.76                  0.26             1.28             4.38  1.05   \n",
+       "2        3.24                  0.30             2.81             5.68  1.03   \n",
+       "3        3.49                  0.24             2.18             7.80  0.86   \n",
+       "4        2.69                  0.39             1.82             4.32  1.04   \n",
+       "\n",
+       "   OD280  Proline  Customer_Segment  \n",
+       "0   3.92     1065                 1  \n",
+       "1   3.40     1050                 1  \n",
+       "2   3.17     1185                 1  \n",
+       "3   3.45     1480                 1  \n",
+       "4   2.93      735                 1  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dataset.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "4a1de5bc",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(178, 14)"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dataset.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "4ec5fb64",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X=dataset.iloc[:,:-1].values\n",
+    "y=dataset.iloc[:,-1].values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "77fd7628",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "X_train, X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "090cc2dd",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler\n",
+    "sc=StandardScaler()\n",
+    "X_train=sc.fit_transform(X_train)\n",
+    "X_test=sc.fit_transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "59241e8e",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0.87668336,  0.79842885,  0.64412971, ...,  0.0290166 ,\n",
+       "        -1.06412236, -0.2059076 ],\n",
+       "       [-0.36659076, -0.7581304 , -0.39779858, ...,  0.0290166 ,\n",
+       "        -0.73083231, -0.81704676],\n",
+       "       [-1.69689407, -0.34424759, -0.32337513, ...,  0.90197362,\n",
+       "         0.51900537, -1.31256499],\n",
+       "       ...,\n",
+       "       [-0.70227477, -0.68615078, -0.65828065, ...,  0.46549511,\n",
+       "         0.51900537, -1.31256499],\n",
+       "       [ 1.13777093, -0.62316862, -0.91876272, ..., -0.18922266,\n",
+       "         1.03282752,  0.80164614],\n",
+       "       [ 1.4610222 ,  0.12361993,  0.42085937, ..., -1.45501034,\n",
+       "        -1.2168803 , -0.2719767 ]])"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "3a4c2c4b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "LogisticRegression(random_state=0)"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Logistic Model without data reduction\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "classifier=LogisticRegression(random_state=0)\n",
+    "classifier.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "b1792fa8",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.9722222222222222"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y_pred=classifier.predict(X_test)\n",
+    "from sklearn.metrics import confusion_matrix, accuracy_score\n",
+    "cm=confusion_matrix(y_test, y_pred)\n",
+    "accuracy_score(y_test, y_pred)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "478d4174",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "e1b65e7f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Data reduction using LDA\n",
+    "from sklearn.discriminant_analysis import LinearDiscriminantAnalysis\n",
+    "lda=LinearDiscriminantAnalysis(n_components=2)\n",
+    "X_train=lda.fit_transform(X_train,y_train)\n",
+    "X_test=lda.transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "b5d19dc7",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(178, 14)"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dataset.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "5fdc5c23",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "LogisticRegression(random_state=0)"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Logistic Model\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "classifier=LogisticRegression(random_state=0)\n",
+    "classifier.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "bce38d6a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred=classifier.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "5337b4b4",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[14,  0,  0],\n",
+       "       [ 0, 16,  0],\n",
+       "       [ 0,  0,  6]], dtype=int64)"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.metrics import confusion_matrix, accuracy_score\n",
+    "cm=confusion_matrix(y_test, y_pred)\n",
+    "cm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "2d56ae61",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1.0"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "accuracy_score(y_test, y_pred)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "508ab360",
+   "metadata": {},
+   "source": [
+    "# Principal Component Analysis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "28337b55",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Import libraries\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "07586fb1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "#Import dat\n",
+    "dataset=pd.read_csv('D:/Test/Wine.csv')\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "a3d3e6b6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "#Independent and Dependent variables\n",
+    "X=dataset.iloc[:,:-1].values\n",
+    "y=dataset.iloc[:,-1].values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "9f78f530",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[-0.41399803, -0.5206661 ],\n",
+       "       [-0.23829026,  0.1471479 ],\n",
+       "       [-0.14564693,  0.49572835],\n",
+       "       [-0.38088256, -0.50667866],\n",
+       "       [ 0.39770227,  0.10423746],\n",
+       "       [ 0.71888602, -0.18275871],\n",
+       "       [-0.18092711,  0.55083893],\n",
+       "       [-0.30004372,  0.61483979],\n",
+       "       [-0.30379455,  0.64166361],\n",
+       "       [ 0.71280634, -0.14687191],\n",
+       "       [-0.4405171 , -0.53570024],\n",
+       "       [ 0.09589581,  0.25717391],\n",
+       "       [-0.41878578, -0.52044039],\n",
+       "       [ 0.35946363, -0.11578002],\n",
+       "       [-0.4395202 , -0.48603975],\n",
+       "       [-0.44052255, -0.53884143],\n",
+       "       [ 0.73368673, -0.15730437],\n",
+       "       [-0.05027133, -0.05401886],\n",
+       "       [ 0.50889078, -0.03707098],\n",
+       "       [-0.27215818,  0.65825971],\n",
+       "       [-0.22624416, -0.3049888 ],\n",
+       "       [-0.47100704, -0.56649666],\n",
+       "       [ 0.19013624,  0.24345505],\n",
+       "       [-0.46986126, -0.57527193],\n",
+       "       [-0.34679775, -0.46661014],\n",
+       "       [ 0.34259807,  0.12086746],\n",
+       "       [-0.41588216, -0.43455668],\n",
+       "       [-0.34884   , -0.27315212],\n",
+       "       [-0.13777051,  0.4242338 ],\n",
+       "       [-0.22782888, -0.03353741],\n",
+       "       [-0.47303383, -0.57576435],\n",
+       "       [-0.19811873,  0.55492238],\n",
+       "       [ 0.74254161, -0.17712611],\n",
+       "       [-0.18743439,  0.34444368],\n",
+       "       [ 0.54816911, -0.04772602],\n",
+       "       [-0.17742372,  0.23366174],\n",
+       "       [ 0.15201465,  0.07194816],\n",
+       "       [ 0.46724898, -0.14442539],\n",
+       "       [ 0.04266621,  0.33730713],\n",
+       "       [ 0.58832126, -0.07643092],\n",
+       "       [-0.34957221, -0.45033403],\n",
+       "       [-0.16922492, -0.22110046],\n",
+       "       [ 0.03015694,  0.37898305],\n",
+       "       [-0.28717167,  0.67951418],\n",
+       "       [-0.2447632 ,  0.52350651],\n",
+       "       [-0.24080923, -0.32417393],\n",
+       "       [-0.3180153 , -0.34916484],\n",
+       "       [ 0.46389272, -0.09931223],\n",
+       "       [-0.28785804, -0.38487797],\n",
+       "       [-0.27694864,  0.56958444],\n",
+       "       [-0.31125636,  0.6188798 ],\n",
+       "       [-0.25329319,  0.12630935],\n",
+       "       [-0.03582504,  0.47193736],\n",
+       "       [ 0.03522859,  0.25845777],\n",
+       "       [ 0.5821337 , -0.17062756],\n",
+       "       [ 0.66681231, -0.1524243 ],\n",
+       "       [-0.16697009,  0.56467046],\n",
+       "       [ 0.485963  , -0.14760039],\n",
+       "       [-0.26960445, -0.33329454],\n",
+       "       [ 0.30753622,  0.16955354],\n",
+       "       [-0.38369046, -0.49633536],\n",
+       "       [ 0.61237839, -0.15161181],\n",
+       "       [ 0.6259618 , -0.1697291 ],\n",
+       "       [ 0.11395431,  0.3326112 ],\n",
+       "       [ 0.41210171, -0.13527984],\n",
+       "       [-0.17024091,  0.50843355],\n",
+       "       [-0.2358968 ,  0.63994405],\n",
+       "       [ 0.1080036 , -0.05651025],\n",
+       "       [-0.29354996, -0.39458345],\n",
+       "       [-0.26963901,  0.20479825],\n",
+       "       [ 0.73087214, -0.17913509],\n",
+       "       [-0.17737599,  0.09691709],\n",
+       "       [-0.27281883,  0.51769068],\n",
+       "       [-0.09458022,  0.52979684],\n",
+       "       [-0.25655508, -0.11531787],\n",
+       "       [ 0.71822803, -0.12536918],\n",
+       "       [-0.29467958, -0.37726099],\n",
+       "       [-0.30814236, -0.38829492],\n",
+       "       [ 0.11284219, -0.05782827],\n",
+       "       [ 0.53965181, -0.16113412],\n",
+       "       [-0.25218058,  0.30828338],\n",
+       "       [-0.31619685, -0.42677206],\n",
+       "       [ 0.70146182, -0.18463543],\n",
+       "       [ 0.62769355, -0.07314574],\n",
+       "       [-0.30778574,  0.63033322],\n",
+       "       [-0.20901886,  0.50520686],\n",
+       "       [ 0.57480622, -0.0160405 ],\n",
+       "       [ 0.71022662, -0.16676956],\n",
+       "       [ 0.21320217,  0.09330788],\n",
+       "       [-0.26369328, -0.35530564],\n",
+       "       [ 0.08289514,  0.33916414],\n",
+       "       [ 0.42641307,  0.04236939],\n",
+       "       [-0.08739162,  0.52205763],\n",
+       "       [-0.45047505, -0.52494918],\n",
+       "       [ 0.62866115, -0.17342072],\n",
+       "       [-0.24124395,  0.22092807],\n",
+       "       [-0.4325944 , -0.5069009 ],\n",
+       "       [-0.45952574, -0.5440823 ],\n",
+       "       [ 0.56075365, -0.14367491],\n",
+       "       [ 0.20644361,  0.24752666],\n",
+       "       [-0.40816697, -0.42553258],\n",
+       "       [ 0.5351872 , -0.152983  ],\n",
+       "       [-0.43775094, -0.48236763],\n",
+       "       [-0.30821043,  0.63957881],\n",
+       "       [ 0.51338535, -0.04000008],\n",
+       "       [ 0.72391464, -0.12870865],\n",
+       "       [-0.30828229,  0.63990342],\n",
+       "       [ 0.66785946, -0.18331069],\n",
+       "       [-0.35007391, -0.47078766],\n",
+       "       [-0.27580738,  0.1746267 ],\n",
+       "       [-0.39040233, -0.51447417],\n",
+       "       [ 0.48662529,  0.03949403],\n",
+       "       [-0.45872597, -0.56277395],\n",
+       "       [-0.28648406, -0.38450304],\n",
+       "       [-0.3553769 , -0.46798513],\n",
+       "       [ 0.62205408, -0.06012447],\n",
+       "       [-0.06885177,  0.38646081],\n",
+       "       [-0.29882353,  0.62597045],\n",
+       "       [-0.07905986,  0.44711509],\n",
+       "       [-0.0876221 ,  0.15432454],\n",
+       "       [-0.410162  , -0.54368037],\n",
+       "       [-0.18757518, -0.25089263],\n",
+       "       [-0.25390497,  0.39082714],\n",
+       "       [-0.27552835,  0.28644209],\n",
+       "       [ 0.34424738, -0.02721452],\n",
+       "       [-0.04013389,  0.47114783],\n",
+       "       [-0.44676615, -0.58341262],\n",
+       "       [-0.24045966, -0.32349801],\n",
+       "       [ 0.58624492, -0.16806684],\n",
+       "       [ 0.50264258, -0.15666902],\n",
+       "       [-0.45145872, -0.52856392],\n",
+       "       [-0.29579341,  0.46539287],\n",
+       "       [-0.28004998,  0.11415363],\n",
+       "       [-0.29627834,  0.60935542],\n",
+       "       [ 0.5002418 , -0.03291871],\n",
+       "       [ 0.34497134,  0.06383695],\n",
+       "       [ 0.70999086, -0.16308888],\n",
+       "       [-0.26666004,  0.53375885],\n",
+       "       [-0.25283244,  0.62181929],\n",
+       "       [-0.28908967,  0.67855343],\n",
+       "       [ 0.6794497 , -0.15165115],\n",
+       "       [-0.30159719, -0.40579266]])"
+      ]
+     },
+     "execution_count": 30,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "id": "7f8b8bf2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Dataset train-test split \n",
+    "from sklearn.model_selection import train_test_split\n",
+    "X_train, X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "id": "d9f76a64",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[1.369e+01, 3.260e+00, 2.540e+00, ..., 9.600e-01, 1.820e+00,\n",
+       "        6.800e+02],\n",
+       "       [1.269e+01, 1.530e+00, 2.260e+00, ..., 9.600e-01, 2.060e+00,\n",
+       "        4.950e+02],\n",
+       "       [1.162e+01, 1.990e+00, 2.280e+00, ..., 1.160e+00, 2.960e+00,\n",
+       "        3.450e+02],\n",
+       "       ...,\n",
+       "       [1.242e+01, 1.610e+00, 2.190e+00, ..., 1.060e+00, 2.960e+00,\n",
+       "        3.450e+02],\n",
+       "       [1.390e+01, 1.680e+00, 2.120e+00, ..., 9.100e-01, 3.330e+00,\n",
+       "        9.850e+02],\n",
+       "       [1.416e+01, 2.510e+00, 2.480e+00, ..., 6.200e-01, 1.710e+00,\n",
+       "        6.600e+02]])"
+      ]
+     },
+     "execution_count": 32,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "id": "1fe22a6d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Preprocessing\n",
+    "#Numberic-> Sclae-> StandardScaler()\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "sc=StandardScaler()\n",
+    "X_train=sc.fit_transform(X_train)\n",
+    "X_test=sc.fit_transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "id": "3761b356",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0.87668336,  0.79842885,  0.64412971, ...,  0.0290166 ,\n",
+       "        -1.06412236, -0.2059076 ],\n",
+       "       [-0.36659076, -0.7581304 , -0.39779858, ...,  0.0290166 ,\n",
+       "        -0.73083231, -0.81704676],\n",
+       "       [-1.69689407, -0.34424759, -0.32337513, ...,  0.90197362,\n",
+       "         0.51900537, -1.31256499],\n",
+       "       ...,\n",
+       "       [-0.70227477, -0.68615078, -0.65828065, ...,  0.46549511,\n",
+       "         0.51900537, -1.31256499],\n",
+       "       [ 1.13777093, -0.62316862, -0.91876272, ..., -0.18922266,\n",
+       "         1.03282752,  0.80164614],\n",
+       "       [ 1.4610222 ,  0.12361993,  0.42085937, ..., -1.45501034,\n",
+       "        -1.2168803 , -0.2719767 ]])"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "id": "8384f6b3",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Dimension Reduction\n",
+    "#PCA 2-dimension\n",
+    "from sklearn.decomposition import PCA\n",
+    "pca=PCA(n_components=2)\n",
+    "X_train=pca.fit_transform(X_train)\n",
+    "X_test=pca.fit_transform(X_test)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "d28918e7",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[-2.17884511e+00, -1.07218467e+00],\n",
+       "       [-1.80819239e+00,  1.57822344e+00],\n",
+       "       [ 1.09829474e+00,  2.22124345e+00],\n",
+       "       [-2.55584748e+00, -1.66210369e+00],\n",
+       "       [ 1.85698063e+00,  2.41573166e-01],\n",
+       "       [ 2.58288576e+00, -1.37668170e+00],\n",
+       "       [ 8.72876119e-01,  2.25618512e+00],\n",
+       "       [-4.18384029e-01,  2.35415681e+00],\n",
+       "       [-3.04977245e-01,  2.27659433e+00],\n",
+       "       [ 2.14082532e+00, -1.10052871e+00],\n",
+       "       [-2.98136465e+00, -2.47159183e-01],\n",
+       "       [ 1.96188242e+00,  1.25407738e+00],\n",
+       "       [-2.16177795e+00, -9.75966550e-01],\n",
+       "       [ 2.21976084e+00, -2.39507167e+00],\n",
+       "       [-2.30179529e+00, -2.05791962e-01],\n",
+       "       [-3.00953827e+00, -2.79141212e-01],\n",
+       "       [ 2.63443473e+00, -8.68313119e-01],\n",
+       "       [-1.09219965e+00, -3.53906625e+00],\n",
+       "       [ 2.62578435e+00, -2.96852840e-03],\n",
+       "       [ 1.98077342e-01,  2.29193443e+00],\n",
+       "       [-2.67442753e+00, -2.58800132e+00],\n",
+       "       [-2.54763698e+00, -4.52703891e-01],\n",
+       "       [ 1.77416736e+00,  8.43586940e-01],\n",
+       "       [-2.77786938e+00, -4.32090258e-01],\n",
+       "       [-2.86679938e+00, -1.87580875e+00],\n",
+       "       [ 1.35498845e+00,  3.99545184e-02],\n",
+       "       [-2.43900474e+00,  9.44074889e-02],\n",
+       "       [-2.27268121e+00,  5.05883053e-01],\n",
+       "       [ 1.17887166e+00,  2.50068415e+00],\n",
+       "       [-2.30673313e+00,  1.30502777e+00],\n",
+       "       [-2.53020738e+00, -5.51277126e-01],\n",
+       "       [ 1.63200028e-01,  1.29107817e+00],\n",
+       "       [ 2.57881158e+00, -1.17515982e+00],\n",
+       "       [-7.62471566e-01,  3.16097049e+00],\n",
+       "       [ 2.57005937e+00, -9.66718786e-02],\n",
+       "       [-4.78337042e-01,  5.77763823e-01],\n",
+       "       [ 5.47417096e-01, -3.77647780e-01],\n",
+       "       [ 3.55763538e+00, -1.45816125e+00],\n",
+       "       [ 1.69260971e+00,  1.37844174e+00],\n",
+       "       [ 2.65288395e+00, -2.39399539e-01],\n",
+       "       [-3.62047411e+00, -6.90153979e-01],\n",
+       "       [-1.61462317e+00, -2.41170340e+00],\n",
+       "       [ 1.50959767e+00,  1.32717326e+00],\n",
+       "       [ 5.36413494e-02,  2.07680094e+00],\n",
+       "       [-1.07889168e-01,  2.85115217e+00],\n",
+       "       [-2.39610454e+00, -2.45883860e+00],\n",
+       "       [-3.12315181e+00,  4.23261512e-01],\n",
+       "       [ 3.28569649e+00, -3.22859884e-01],\n",
+       "       [-3.55506872e+00, -1.74242946e+00],\n",
+       "       [-3.87020538e-01,  2.61510101e+00],\n",
+       "       [-4.74514016e-01,  1.98023790e+00],\n",
+       "       [-1.06865761e+00,  6.78906271e-01],\n",
+       "       [ 1.08546036e+00,  1.30817801e+00],\n",
+       "       [ 2.02340107e+00,  1.56926094e+00],\n",
+       "       [ 2.76257094e+00, -1.85603600e+00],\n",
+       "       [ 2.06778286e+00, -1.35861191e+00],\n",
+       "       [ 9.06600653e-01,  2.04110996e+00],\n",
+       "       [ 3.52336455e+00, -1.39946872e+00],\n",
+       "       [-3.79914321e+00, -4.92727617e-02],\n",
+       "       [ 1.75250993e+00,  4.64283651e-01],\n",
+       "       [-3.46539192e+00, -7.90385134e-01],\n",
+       "       [ 3.16221605e+00, -8.39879111e-01],\n",
+       "       [ 2.37656864e+00, -1.72475988e+00],\n",
+       "       [ 1.31278073e+00,  8.53348760e-01],\n",
+       "       [ 3.57258440e+00, -1.78091597e+00],\n",
+       "       [ 9.50877158e-01,  2.38927332e+00],\n",
+       "       [ 4.95461316e-01,  2.16498322e+00],\n",
+       "       [ 3.79294638e+00, -2.92787186e+00],\n",
+       "       [-2.37978591e+00, -2.13572422e+00],\n",
+       "       [-1.50346992e+00,  1.39146991e+00],\n",
+       "       [ 2.50566646e+00, -1.30365941e+00],\n",
+       "       [-6.97535788e-01,  2.78160736e-01],\n",
+       "       [-7.25562555e-01,  2.54007170e+00],\n",
+       "       [ 9.24047324e-01,  1.46344718e+00],\n",
+       "       [-1.25151294e+00,  2.74792621e-02],\n",
+       "       [ 2.20937835e+00, -8.05690832e-01],\n",
+       "       [-3.84416995e+00, -5.74263508e-01],\n",
+       "       [-1.77983157e+00, -1.38012167e+00],\n",
+       "       [ 4.35413058e+00, -2.33750318e+00],\n",
+       "       [ 3.33834347e+00, -1.51169086e+00],\n",
+       "       [-1.44769123e+00,  1.90826204e+00],\n",
+       "       [-2.75066706e+00, -2.07100640e+00],\n",
+       "       [ 2.79475799e+00, -1.36659228e+00],\n",
+       "       [ 1.84642601e+00, -6.82481476e-01],\n",
+       "       [-4.13332842e-01,  2.20440158e+00],\n",
+       "       [-4.81356617e-02,  1.17469609e+00],\n",
+       "       [ 1.99166500e+00, -2.50860656e-01],\n",
+       "       [ 2.26421169e+00, -1.32120813e+00],\n",
+       "       [ 7.85551414e-01, -2.46487051e-01],\n",
+       "       [-3.32586984e+00, -2.14485564e+00],\n",
+       "       [ 1.00496881e+00,  7.20390295e-01],\n",
+       "       [ 2.31479633e+00,  2.62129546e-01],\n",
+       "       [ 8.67032066e-01,  1.36440259e+00],\n",
+       "       [-2.28629769e+00, -4.54244754e-01],\n",
+       "       [ 3.14452871e+00, -1.29318898e+00],\n",
+       "       [-1.65297942e+00,  1.74177394e+00],\n",
+       "       [-2.84689388e+00, -7.78426712e-02],\n",
+       "       [-2.68393126e+00, -2.53813173e-01],\n",
+       "       [ 1.97280128e+00, -1.70171835e+00],\n",
+       "       [ 1.63120111e+00,  7.24762688e-01],\n",
+       "       [-2.05082836e+00, -2.11848206e-01],\n",
+       "       [ 2.28798382e+00, -1.95899701e+00],\n",
+       "       [-2.28266458e+00, -2.07243579e-01],\n",
+       "       [-3.45079842e-01,  1.92360626e+00],\n",
+       "       [ 1.49448758e+00, -7.18673825e-01],\n",
+       "       [ 2.26695932e+00, -7.93531817e-01],\n",
+       "       [-3.44673144e-01,  1.92686997e+00],\n",
+       "       [ 2.75927029e+00, -1.56391999e+00],\n",
+       "       [-2.86839562e+00, -1.85579453e+00],\n",
+       "       [-1.46228982e+00,  1.22151405e+00],\n",
+       "       [-3.31754434e+00, -1.20382601e+00],\n",
+       "       [ 1.72057718e+00, -1.36843828e-01],\n",
+       "       [-2.90065973e+00, -3.71521776e-01],\n",
+       "       [-2.30532411e+00, -2.14386284e+00],\n",
+       "       [-3.51377495e+00, -1.17981731e+00],\n",
+       "       [ 2.32780065e+00, -2.95396131e-01],\n",
+       "       [ 1.54528723e+00,  1.99996309e+00],\n",
+       "       [-3.32660657e-01,  2.37118865e+00],\n",
+       "       [ 4.96648201e-01,  9.57282660e-01],\n",
+       "       [ 6.69654741e-01,  3.80907536e+00],\n",
+       "       [-2.76009366e+00, -1.48785734e+00],\n",
+       "       [-3.19187371e+00, -2.70815669e+00],\n",
+       "       [-6.05023707e-01,  1.10583182e+00],\n",
+       "       [-1.34006934e+00,  1.51232906e+00],\n",
+       "       [ 1.05506599e+00, -9.49724036e-01],\n",
+       "       [ 1.16017702e+00,  1.39768493e+00],\n",
+       "       [-2.87675356e+00, -1.15157946e+00],\n",
+       "       [-2.35838421e+00, -2.44842974e+00],\n",
+       "       [ 2.54704855e+00, -1.86824592e+00],\n",
+       "       [ 3.20597222e+00, -1.85912926e+00],\n",
+       "       [-2.69949485e+00, -1.75638262e-01],\n",
+       "       [-9.67436859e-01,  1.81399824e+00],\n",
+       "       [-1.46454259e+00,  1.01680272e+00],\n",
+       "       [-4.04000223e-01,  2.40815711e+00],\n",
+       "       [ 1.46393837e+00, -6.90763351e-01],\n",
+       "       [ 1.15903114e+00, -2.91379684e-01],\n",
+       "       [ 2.82057099e+00, -8.99578955e-01],\n",
+       "       [-5.01011897e-01,  2.68453162e+00],\n",
+       "       [ 3.30453915e-01,  2.43396193e+00],\n",
+       "       [ 1.09727608e-02,  1.99585453e+00],\n",
+       "       [ 2.89176687e+00, -7.71555485e-01],\n",
+       "       [-2.44830439e+00, -2.11360296e+00]])"
+      ]
+     },
+     "execution_count": 36,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "id": "7678986a",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "LogisticRegression(random_state=0)"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Logistic Model\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "classifier=LogisticRegression(random_state=0)\n",
+    "classifier.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "id": "8849429b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred=classifier.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "id": "c3d1a691",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0,  1, 13],\n",
+       "       [ 2, 13,  1],\n",
+       "       [ 6,  0,  0]], dtype=int64)"
+      ]
+     },
+     "execution_count": 39,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.metrics import confusion_matrix, accuracy_score\n",
+    "cm=confusion_matrix(y_test, y_pred)\n",
+    "cm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "id": "d531d208",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.3611111111111111"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "accuracy_score(y_test, y_pred)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2b91d47d",
+   "metadata": {},
+   "source": [
+    "# Kernel Principal Componenet Analysis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "id": "c829f95b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#PCA with Kernel-Higher dimensions\n",
+    "from sklearn.decomposition import KernelPCA\n",
+    "pca=KernelPCA(n_components=2,kernel='rbf')\n",
+    "X_train=pca.fit_transform(X_train)\n",
+    "X_test=pca.fit_transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "id": "032e2768",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "LogisticRegression(random_state=0)"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Logistic Model\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "classifier=LogisticRegression(random_state=0)\n",
+    "classifier.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "id": "ab025078",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred=classifier.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "id": "ab7c1283",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[14,  0,  0],\n",
+       "       [ 1,  8,  7],\n",
+       "       [ 0,  6,  0]], dtype=int64)"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.metrics import confusion_matrix, accuracy_score\n",
+    "cm=confusion_matrix(y_test, y_pred)\n",
+    "cm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "id": "6d44cf09",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.6111111111111112"
+      ]
+     },
+     "execution_count": 45,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "accuracy_score(y_test, y_pred)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "50eb643f",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
